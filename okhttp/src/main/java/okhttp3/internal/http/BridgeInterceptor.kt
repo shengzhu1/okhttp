@@ -67,9 +67,14 @@ class BridgeInterceptor(private val cookieJar: CookieJar) : Interceptor {
     // If we add an "Accept-Encoding: gzip" header field we're responsible for also decompressing
     // the transfer stream.
     var transparentGzip = false
-    if (userRequest.header("Accept-Encoding") == null && userRequest.header("Range") == null) {
+    val acceptEncoding = userRequest.header("Accept-Encoding")
+    if (acceptEncoding == null && userRequest.header("Range") == null) {
       transparentGzip = true
       requestBuilder.header("Accept-Encoding", "gzip")
+    }
+    if (!transparentGzip && 
+        "gzip".equals(acceptEncoding, ignoreCase = true)){
+      transparentGzip = true      
     }
 
     val cookies = cookieJar.loadForRequest(userRequest.url)
